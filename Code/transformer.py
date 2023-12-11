@@ -1,40 +1,50 @@
-import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Embedding ,  GlobalAveragePooling1D, Dense
-import transformers as Transformer
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+import pandas as pd
+import sys
+from tensorflow.keras.layers import Input, Bidirectional, LSTM, GlobalAveragePooling1D, Dense
 
-# Assume you have your embedded dataset (embedded_representation) and labels (y_labels)
-# Example data (replace this with your actual data)
-embedded_representation = np.random.rand(100, 10, 20)  # 100 samples, 10 words per sample, 20 embedding dimensions
-y_labels = np.random.randint(2, size=(100,))
+sys.path.append('/home/joe/School/Neural/NeuralNetworks-DNN/')  # Replace with the actual path to your project
+from PreProccessing import preprocessing as pre
 
-# Define the Transformer model
-def build_transformer_model(input_shape, embedding_dim, num_heads, ff_dim, num_transformer_blocks, mlp_units, dropout=0.1):
-    inputs = Input(shape=input_shape)
-    x = Embedding(input_dim=embedding_dim, output_dim=embedding_dim)(inputs)
-    for _ in range(num_transformer_blocks):
-        x = Transformer(num_heads=num_heads, ff_dim=ff_dim, dropout=dropout)(x)
-    x = GlobalAveragePooling1D()(x)
-    for dim in mlp_units:
-        x = Dense(dim, activation="relu")(x)
-    outputs = Dense(1, activation="sigmoid")(x)
-    return Model(inputs=inputs, outputs=outputs)
+def build_custom_model(input_shape, embedding_dim, num_classes):
+    # Input layer
+    # inputs = Input(shape=input_shape, dtype=tf.float32, name="input_layer")
+    inputs = Input(input_shape, dtype=tf.float32, name="input_layer")
 
-# Set hyperparameters
-embedding_dim = 20  # Change this based on the dimensionality of your embeddings
-num_heads = 2
-ff_dim = 32
-num_transformer_blocks = 2
-mlp_units = [128]
+    # Bidirectional LSTM layer
+    lstm_layer = Bidirectional(LSTM(units=64, return_sequences=True))(inputs)
 
-# Build and compile the model
-transformer_model = build_transformer_model((None,), embedding_dim, num_heads, ff_dim, num_transformer_blocks, mlp_units)
-transformer_model.compile(optimizer=Adam(lr=0.001), loss="binary_crossentropy", metrics=["accuracy"])
+    # Global Average Pooling layer
+    avg_pooling = GlobalAveragePooling1D()(lstm_layer)
 
-# Print a summary of the model architecture
-transformer_model.summary()
+    # Output layer
+    outputs = Dense(units=num_classes, activation='softmax')(avg_pooling)
 
+    # Model
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name='custom_model')
+
+    return model
+
+# Example usage:
+input_shape = (39419,15)  # Replace max_sequence_length with the actual length of your sequences
+embedding_dim = 15  # Replace with the actual embedding dimension
+num_classes = 3
+
+# Build the custom model
+custom_model = build_custom_model(input_shape=input_shape, embedding_dim=embedding_dim, num_classes=num_classes)
+
+
+# Assuming you have your training data and labels
+# Replace `x_train` and `y_train` with your actual training data and labels
+
+# Compile the model
+custom_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 # Train the model
-transformer_model.fit(embedded_representation, y_labels, epochs=10, batch_size=32, validation_split=0.2)
+x_train , y_train , x_test  , y_test = pre.preprocessing()
+
+print(x_train.shape)
+
+custom_model.fit(x_train, y_train, epochs=10, batch_size=32, validation_split=0.2)
+
+# Evaluate the model
+custom_model.evaluate(x_test, y_test, batch_size=32)
