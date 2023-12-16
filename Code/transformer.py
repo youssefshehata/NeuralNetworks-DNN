@@ -1,50 +1,54 @@
 import tensorflow as tf
-import pandas as pd
-import sys
-from tensorflow.keras.layers import Input, Bidirectional, LSTM, GlobalAveragePooling1D, Dense
+from keras.layers import Input, Dense, Embedding, GlobalAveragePooling1D
+import tensorflow_addons as tfa
 
-sys.path.append('/home/joe/School/Neural/NeuralNetworks-DNN/')  # Replace with the actual path to your project
-from PreProccessing import preprocessing as pre
+from tensorflow.nlp.layers import TransformerEncoderBlock
 
-def build_custom_model(input_shape, embedding_dim, num_classes):
-    # Input layer
-    # inputs = Input(shape=input_shape, dtype=tf.float32, name="input_layer")
-    inputs = Input(input_shape, dtype=tf.float32, name="input_layer")
 
-    # Bidirectional LSTM layer
-    lstm_layer = Bidirectional(LSTM(units=64, return_sequences=True))(inputs)
+def trans(max_seq_length, vocab_size, num_classes , train_padded , val_padded , train_labels , val_labels ):
+    # Input layer for token indices
+    inputs = Input(shape=(max_seq_length,), dtype=tf.int32)
 
-    # Global Average Pooling layer
-    avg_pooling = GlobalAveragePooling1D()(lstm_layer)
+    # Embedding layer
+    embedding_layer = Embedding(input_dim=vocab_size, output_dim=128)(inputs)
+
+    # Transformer layer
+    transformer_layer = TransformerEncoderBlock(
+        num_layers=1,
+        d_model=128,
+        num_heads=4,
+        mlp_units=[128],
+        dropout=0.1,
+    )(embedding_layer)
+
+    # Global average pooling layer
+    pooling_layer = GlobalAveragePooling1D()(transformer_layer)
 
     # Output layer
-    outputs = Dense(units=num_classes, activation='softmax')(avg_pooling)
+    outputs = Dense(num_classes, activation='softmax')(pooling_layer)
 
     # Model
-    model = tf.keras.Model(inputs=inputs, outputs=outputs, name='custom_model')
-
-    return model
-
-# Example usage:
-input_shape = (39419,15)  # Replace max_sequence_length with the actual length of your sequences
-embedding_dim = 15  # Replace with the actual embedding dimension
-num_classes = 3
-
-# Build the custom model
-custom_model = build_custom_model(input_shape=input_shape, embedding_dim=embedding_dim, num_classes=num_classes)
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name='transformer_model')
 
 
-# Assuming you have your training data and labels
-# Replace `x_train` and `y_train` with your actual training data and labels
 
-# Compile the model
-custom_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-# Train the model
-x_train , y_train , x_test  , y_test = pre.preprocessing()
 
-print(x_train.shape)
 
-custom_model.fit(x_train, y_train, epochs=10, batch_size=32, validation_split=0.2)
+    num_classes = 3   # Replace with the number of classes in your classification task
 
-# Evaluate the model
-custom_model.evaluate(x_test, y_test, batch_size=32)
+    model = model(max_seq_length, vocab_size, num_classes)
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.fit(train_padded, train_labels, epochs=6, validation_data=(val_padded, val_labels), verbose=2)
+    score = model.evaluate(val_padded, val_labels, verbose=2)
+
+
+    print(f"Test Accuracy:", score[1])
+    predictions = model.predict(train_padded)
+    predictions = [-1 if P < 0.33 else (0 if P < 0.67 else 1) for P in predictions]
+
+    print("Actual labels : ",train_labels[10:20])    
+    print("Predicted labels : ",predictions[10:20])
+
+
+
+
