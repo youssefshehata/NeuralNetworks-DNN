@@ -41,23 +41,36 @@ def stemming(text):
 
     return processed_text
 
+
 def removeNulls(sentences ,  lebels):
     newSens= []
     newLabels = []
     for i in range(len(sentences)):
         if len(sentences[i]) > 1:
             newSens.append(sentences[i])
-            newLabels.append(lebels[i])
+            if(len(lebels) > 0):
+                newLabels.append(lebels[i])
     return newSens , newLabels
 
+def readData():
+    data = pd.read_csv("/home/joe/School/Neural/NeuralNetworks-DNN/Data/test _no_label.csv")
+    data.dropna()
+    data = data[data['review_description'].apply(len) > 1]
 
-def preprocessing():
+    sentences = data[['review_description']]
+
+    return sentences 
+    
+    
+def preprocessing(sentences , labels):
     data = pd.read_excel("/home/joe/School/Neural/NeuralNetworks-DNN/Data/train.xlsx", sheet_name='Sheet1')
     data.dropna()
     data = data[data['review_description'].apply(len) > 1]
 
     sentences = data[['review_description']]
     labels = data[['rating']].values
+
+
     pattern = r'[^\u0600-\u06FF\s]+'    
     cleanSens = []
     stop_words = set(nltk.corpus.stopwords.words('arabic'))
@@ -73,4 +86,43 @@ def preprocessing():
         cleanSens.append(sentence)
 
     cleanSens , labels = removeNulls(cleanSens , labels)
+    with open("sentences.txt", 'w') as file:
+        # Write each sentence to the file
+        for sentence in cleanSens:
+            file.write(sentence + '\n')
+
+    with open("labels.txt", 'w') as file:
+        # Write each sentence to the file
+        for sentence in cleanSens:
+            file.write(sentence + '\n')
+
     
+#write sens and labels to files 
+
+    
+def preprocessingTest():
+    sentences = readData()
+    pattern = r'[^\u0600-\u06FF\s]+'
+    cleanSens = []
+    stop_words = set(nltk.corpus.stopwords.words('arabic'))
+    for i, row in sentences.iterrows():
+        content = row['review_description']
+        content_clean = re.sub(pattern, '', content)
+        tokens = [re.sub(r'[^\w\s]', '', word) for word in nltk.word_tokenize(content_clean) if
+                word.casefold() not in stop_words and word.casefold() not in string.punctuation and len(word) > 1]
+        
+        sentence = ' '.join(tokens)
+        sentence = stemming(sentence)
+
+        cleanSens.append(sentence)
+
+    # cleanSens , _ = removeNulls(cleanSens , [])
+
+    # Open the file in write mode
+    with open("test_sentences.txt", 'w') as file:
+        # Write each sentence to the file
+        for sentence in cleanSens:
+            file.write(sentence + '\n')
+
+
+preprocessingTest()

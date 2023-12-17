@@ -1,47 +1,43 @@
-import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from keras.models import Sequential
+from keras.layers import Embedding, LSTM, Dense
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
+from keras.utils import to_categorical
 
-nltk.download('punkt')
-nltk.download('stopwords')
+# Sample sentences
+sentences = ["This is the first sentence.",
+             "And this is the second sentence.",
+             "A third sentence for tokenization."]
 
+# Tokenization
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(sentences)
+total_words = len(tokenizer.word_index) + 1
 
+# TF-IDF Vectorization
+tfidf_vectorizer = TfidfVectorizer()
+X_tfidf = tfidf_vectorizer.fit_transform(sentences).toarray()
 
-def remove_consecutive_repeated_letters(word):
-    # Use regular expression to remove consecutive repeated letters
-    word =  re.sub(r'(.)\1+', r'\1', word)
-    if len(word) > 1:
-        return word
-    return ''
+# Prepare data for LSTM model
+X_lstm = pad_sequences(tokenizer.texts_to_sequences(sentences), padding='post')
+y_lstm = np.array([0, 1, 1])  # Example binary labels (0 and 1)
 
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_lstm, y_lstm, test_size=0.2, random_state=42)
 
+# Build LSTM model
+model = Sequential()
+model.add(Embedding(total_words, 32, input_length=X_lstm.shape[1]))
+model.add(LSTM(100))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-def steming(text):
-    # Remove non-Arabic characters
-    text = re.sub(r'[^ء-ي\s]', '', text)
+# Train the model
+model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
 
-    # Tokenize the text
-    tokens = word_tokenize(text)
-
-    # Remove stop words
-    stop_words = set(stopwords.words('arabic'))
-    tokens = [word for word in tokens if word.lower() not in stop_words]
-
-
-    tokens = [remove_consecutive_repeated_letters(word) for word in tokens]
-
-    # Stemming using SnowballStemmer
-    stemmer = SnowballStemmer('arabic')
-    tokens = [stemmer.stem(word) for word in tokens]
-
-    # Join the tokens back into a single string
-    processed_text = ' '.join(tokens)
-
-    return processed_text
-
-# Example usage
-arabic_text = "التحليللللل اللغوي للغة العربية رائععع نيك وكسممم ززززز .... ابن زاايد"
-processed_text = preprocess_arabic_text(arabic_text)
-print(processed_text)
+# Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f'Loss: {loss}, Accuracy: {accuracy}')

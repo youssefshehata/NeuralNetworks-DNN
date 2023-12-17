@@ -2,6 +2,8 @@ import tensorflow as tf
 from keras.layers import Input, Dense, Embedding, GlobalAveragePooling1D, Dropout, LayerNormalization, MultiHeadAttention
 from keras.models import Model
 from keras.optimizers import Adam
+import numpy as np
+import pandas as pd
 
 def feed_forward(x, ff_dim, dropout=0.1):
     x = Dense(ff_dim, activation='relu')(x)
@@ -38,7 +40,7 @@ def build_model(max_seq_length, vocab_size, num_classes):
     model = Model(inputs=inputs, outputs=outputs, name='transformer_model')
     return model
 
-def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, train_labels, val_labels):
+def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, train_labels, val_labels , test_sentences):
     num_classes = 3  # Replace with the number of classes in your classification task
 
     model = build_model(max_seq_length, vocab_size, num_classes)
@@ -47,8 +49,18 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
     score = model.evaluate(val_padded, val_labels, verbose=2)
 
     print(f"Test Accuracy:", score[1])
-    predictions = model.predict(train_padded)
-    predictions = [-1 if P < 0.33 else (0 if P < 0.67 else 1) for P in predictions]
 
-    print("Actual labels : ", train_labels[10:20])
-    print("Predicted labels : ", predictions[10:20])
+    predictions = model.predict(test_sentences)
+
+    predictions = np.array([-1 if p[0] < 0.33 else (0 if p[0] < 0.67 else 1) for p in predictions])
+
+
+
+
+
+    data = pd.read_csv("/home/joe/School/Neural/NeuralNetworks-DNN/Data/test _no_label.csv")
+    submimssion= pd.DataFrame()
+    submimssion["ID"] = data['ID']
+    submimssion["rating"] = predictions
+    submimssion.to_csv("TransSubmission.csv", index=False)
+

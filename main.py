@@ -1,20 +1,17 @@
 import sys 
 import os
 sys.path.append(os.path.dirname(os.path.abspath("/home/joe/School/Neural/NeuralNetworks-DNN/")))
-import PreProccessing.Embedding as embedding
 import PreProccessing.Tokenization as tokenizer
 from Code.transformer import trans
 
 from Code.LSTM import mylstm
-from keras.layers import Embedding , LSTM , Dense
-from keras.models import Sequential
-import keras
+
 import numpy as np
 
 def label_encoder(label):
-    if label == "-1":
+    if label == -1:
         return 0
-    elif label == "0":
+    elif label == 0:
         return 1
     else:
         return 2
@@ -36,10 +33,15 @@ def main():
     # this block includes the code that actually works (only lstm works ) , comment everything else to try it out
     ################################################################
 
-    num_unique_words , max_sequence_length , train_padded , train_labels , val_padded , val_labels,sentences = tokenizer.tokenize()
+    num_unique_words , max_sequence_length , train_padded , train_labels , val_padded , val_labels,sentences , test_sentences = tokenizer.tokenize(71)
+    for i in range(len(train_labels)):
+        train_labels[i] = label_encoder(train_labels[i])
+    for i in range(len(val_labels)):
+        val_labels[i] = label_encoder(val_labels[i])
+    
 
     # lstm code
-    mylstm( num_unique_words, max_sequence_length , train_padded , train_labels , val_padded , val_labels)
+    mylstm( num_unique_words, max_sequence_length , train_padded , train_labels , val_padded , val_labels , test_sentences)
 
     
     # transformer code 
