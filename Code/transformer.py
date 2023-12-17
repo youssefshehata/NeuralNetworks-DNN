@@ -52,7 +52,7 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
 
     predictions = model.predict(test_sentences)
 
-    predictions = np.array([-1 if p[0] < 0.33 else (0 if p[0] < 0.67 else 1) for p in predictions])
+    predictions = np.argmax(predictions, axis=1) - 1
 
 
 

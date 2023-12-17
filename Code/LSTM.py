@@ -14,14 +14,14 @@ sys.path.append(os.path.dirname(os.path.abspath("/home/joe/School/Neural/NeuralN
 
 def mylstm(num_unique_words, max_sequence_length, train_padded, train_labels, val_padded, val_labels , test_sentences):
   
-    # print(train_padded.shape)
-    # print(test_sentences.shape)
+    # # print(train_padded.shape)
+    # # print(test_sentences.shape)
 
-    # print(train_padded[0:3])
-    # print(test_sentences[0:3])
+    # # print(train_padded[0:3])
+    # # print(test_sentences[0:3])
     
     
-    # # Creating model
+    # # # Creating model
     model = Sequential()
 
 
@@ -36,20 +36,19 @@ def mylstm(num_unique_words, max_sequence_length, train_padded, train_labels, va
     loss = keras.losses.sparse_categorical_crossentropy
     optim = keras.optimizers.Adam(learning_rate=0.001)
     model.compile(loss=loss, optimizer=optim, metrics=['accuracy'])
-    model.fit(train_padded, train_labels, epochs=3, validation_data=(val_padded, val_labels), verbose=2)
+    model.fit(train_padded, train_labels, epochs=6, validation_data=(val_padded, val_labels), verbose=2)
 
 
     score = model.evaluate(val_padded, val_labels, verbose=2)
     print(f"Test Accuracy:", score[1])
 
     predictions = model.predict(test_sentences)
-    print(predictions[10:20])
-    predictions = np.array([-1 if p[0] < 0.33 else (0 if p[0] < 0.67 else 1) for p in predictions])
+    predictions = np.argmax(predictions, axis=1) - 1
 
 
 
-    print("Actual labels : ", train_labels[10:20])    
-    print("Predicted labels : ", predictions[10:20])
+    # print("Actual labels : ", train_labels[10:20])    
+    # print("Predicted labels : ", predictions[10:20])
 
 
 
