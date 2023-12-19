@@ -29,14 +29,14 @@ def mylstm(num_unique_words, max_sequence_length, train_padded, train_labels, va
 
     model.add(Embedding(num_unique_words + 1 , 200, input_length=max_sequence_length, mask_zero=True))
 
-    model.add(Bidirectional(LSTM(128, dropout=0.1)))
+    model.add(Bidirectional(LSTM(128, dropout=0)))
     model.add(Dense(64, activation='relu'))
     model.add(Dense(3, activation='softmax'))
 
     loss = keras.losses.sparse_categorical_crossentropy
     optim = keras.optimizers.Adam(learning_rate=0.001)
     model.compile(loss=loss, optimizer=optim, metrics=['accuracy'])
-    model.fit(train_padded, train_labels, epochs=3, validation_data=(val_padded, val_labels), verbose=2)
+    model.fit(train_padded, train_labels, epochs=1, validation_data=(val_padded, val_labels), verbose=2)
 
     score = model.evaluate(val_padded, val_labels, verbose=2)
     print(f"Test Accuracy:", score[1])
