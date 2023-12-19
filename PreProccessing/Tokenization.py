@@ -31,7 +31,7 @@ def importingData():
             labels.append(int(line.strip()))
 
 
-    with open("PreProccessing/test_sentences.txt", 'r', encoding='utf-8') as file:
+    with open("PreProccessing/Testsentences.txt", 'r', encoding='utf-8') as file:
         for line in file:
             # Process each line as needed
             test_sentences.append(line.strip())

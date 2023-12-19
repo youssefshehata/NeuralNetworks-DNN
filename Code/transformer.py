@@ -45,7 +45,7 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
 
     model = build_model(max_seq_length, vocab_size, num_classes)
     model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    model.fit(train_padded, train_labels, epochs=3, validation_data=(val_padded, val_labels), verbose=2)
+    model.fit(train_padded, train_labels, epochs=2, validation_data=(val_padded, val_labels), verbose=2)
     score = model.evaluate(val_padded, val_labels, verbose=2)
 
     print(f"Test Accuracy:", score[1])
@@ -58,7 +58,7 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
 
 
 
-    data = pd.read_csv("/home/joe/School/Neural/NeuralNetworks-DNN/Data/test _no_label.csv")
+    data = pd.read_csv("C:/Users/saif_/PycharmProjects/NeuralNetworks-DNN/Data/test _no_label.csv")
     submimssion= pd.DataFrame()
     submimssion["ID"] = data['ID']
     submimssion["rating"] = predictions
