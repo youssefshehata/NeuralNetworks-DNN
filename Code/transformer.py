@@ -35,7 +35,7 @@ def build_model(max_seq_length, vocab_size, num_classes):
     pooling_layer = GlobalAveragePooling1D()(transformer_block)
 
     # Output layer
-    outputs = Dense(num_classes, activation='sigmoid')(pooling_layer)
+    outputs = Dense(num_classes, activation='softmax')(pooling_layer)
 
     model = Model(inputs=inputs, outputs=outputs, name='transformer_model')
     return model
@@ -45,7 +45,7 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
 
     model = build_model(max_seq_length, vocab_size, num_classes)
     model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    model.fit(train_padded, train_labels, epochs=3, validation_data=(val_padded, val_labels), verbose=2)
+    model.fit(train_padded, train_labels, epochs=1, validation_data=(val_padded, val_labels), verbose=2)
     score = model.evaluate(val_padded, val_labels, verbose=2)
 
     print(f"Test Accuracy:", score[1])
@@ -58,7 +58,7 @@ def trans(max_seq_length, vocab_size, num_classes, train_padded, val_padded, tra
 
 
 
-    data = pd.read_csv("/home/joe/School/Neural/NeuralNetworks-DNN/Data/test _no_label.csv")
+    data = pd.read_csv("D:/NN/proj_yuss/NeuralNetworks-DNN/Data/test _no_label.csv")
     submimssion= pd.DataFrame()
     submimssion["ID"] = data['ID']
     submimssion["rating"] = predictions

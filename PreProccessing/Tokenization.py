@@ -1,13 +1,14 @@
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from collections import Counter
 
 
 
 
 
-def decode(reverse_words_index,text): 
+def decode(reverse_words_index,text):
     return ' '.join([reverse_words_index.get(i, '') for i in text])
 
 def couter_word(txt):
@@ -72,7 +73,7 @@ def tokenize(max_sequence_length  = 36):
     val_labels = val_df.rating.to_numpy()
     test_sentences= test.test.to_numpy()
 
-    
+
 
 
 
@@ -88,11 +89,11 @@ def tokenize(max_sequence_length  = 36):
     index_word = tokenizer.index_word
 
     # Padding Sequences
-    
+
     train_padded = pad_sequences(train_sequences, maxlen=max_sequence_length, padding='post', truncating='post')
     val_padded = pad_sequences(val_sequences, maxlen=max_sequence_length, padding='post', truncating='post')
     test_sentences_padded =  pad_sequences(test_sentences, maxlen=max_sequence_length, padding='post', truncating='post')
-    
+
 
     # print(train_padded[9158])
     # reversed index ,word dictionary to get the word of each index

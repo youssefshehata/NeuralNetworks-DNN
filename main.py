@@ -34,22 +34,22 @@ def main():
     ################################################################
 
     num_unique_words , max_sequence_length , train_padded , train_labels , val_padded , val_labels,sentences , test_sentences = tokenizer.tokenize(71)
-    for i in range(len(train_labels)):
-        train_labels[i] = label_encoder(train_labels[i])
-    for i in range(len(val_labels)):
-        val_labels[i] = label_encoder(val_labels[i])
-    
-
-    # lstm code
-    mylstm( num_unique_words, max_sequence_length , train_padded , train_labels , val_padded , val_labels , test_sentences)
-
-    
-    # transformer code 
     # for i in range(len(train_labels)):
     #     train_labels[i] = label_encoder(train_labels[i])
     # for i in range(len(val_labels)):
     #     val_labels[i] = label_encoder(val_labels[i])
-    # trans(max_sequence_length, num_unique_words, 3 , train_padded , val_padded , train_labels , val_labels )
+    #
+    #
+    # # lstm code
+    # mylstm( num_unique_words, max_sequence_length , train_padded , train_labels , val_padded , val_labels , test_sentences)
+    #
+    #
+    #transformer code
+    for i in range(len(train_labels)):
+        train_labels[i] = label_encoder(train_labels[i])
+    for i in range(len(val_labels)):
+        val_labels[i] = label_encoder(val_labels[i])
+    trans(max_sequence_length, num_unique_words, 3 , train_padded , val_padded , train_labels , val_labels,test_sentences )
 
 
     ###############################################################

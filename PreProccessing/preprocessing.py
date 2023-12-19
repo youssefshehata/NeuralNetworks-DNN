@@ -1,4 +1,5 @@
 import pandas as pd
+import preprocessing_helpers as hp
 import nltk
 import re
 import string
@@ -53,7 +54,7 @@ def removeNulls(sentences ,  lebels):
     return newSens , newLabels
 
 def readData():
-    data = pd.read_csv("/home/joe/School/Neural/NeuralNetworks-DNN/Data/test _no_label.csv")
+    data = pd.read_csv("D:/NN/proj_yuss/NeuralNetworks-DNN/Data/test _no_label.csv")
     data.dropna()
     data = data[data['review_description'].apply(len) > 1]
 
@@ -63,12 +64,13 @@ def readData():
     
     
 def preprocessing(sentences , labels):
-    data = pd.read_excel("/home/joe/School/Neural/NeuralNetworks-DNN/Data/train.xlsx", sheet_name='Sheet1')
+    data = pd.read_excel("D:/NN/proj_yuss/NeuralNetworks-DNN/Data/train.xlsx", sheet_name='Sheet1')
     data.dropna()
     data = data[data['review_description'].apply(len) > 1]
 
     sentences = data[['review_description']]
     labels = data[['rating']].values
+    print(labels)
 
 
     pattern = r'[^\u0600-\u06FF\s]+'    
@@ -76,8 +78,8 @@ def preprocessing(sentences , labels):
     stop_words = set(nltk.corpus.stopwords.words('arabic'))
     for i, row in sentences.iterrows():
         content = row['review_description']
-        content_clean = re.sub(pattern, '', content)
-        tokens = [re.sub(r'[^\w\s]', '', word) for word in nltk.word_tokenize(content_clean) if
+        #content_clean = re.sub(pattern, '', content)
+        tokens = [hp.handle_latin_words(re.sub(r'[^\w\s]', '', word)) for word in nltk.word_tokenize(content) if
                 word.casefold() not in stop_words and word.casefold() not in string.punctuation and len(word) > 1]
         
         sentence = ' '.join(tokens)
@@ -107,22 +109,23 @@ def preprocessingTest():
     stop_words = set(nltk.corpus.stopwords.words('arabic'))
     for i, row in sentences.iterrows():
         content = row['review_description']
-        content_clean = re.sub(pattern, '', content)
-        tokens = [re.sub(r'[^\w\s]', '', word) for word in nltk.word_tokenize(content_clean) if
-                word.casefold() not in stop_words and word.casefold() not in string.punctuation and len(word) > 1]
-        
+        #content_clean = re.sub(pattern, '', content)
+        tokens = [hp.handle_latin_words(re.sub(r'[^\w\s]', '', word)) for word in nltk.word_tokenize(content) if
+                  word.casefold() not in stop_words and word.casefold() not in string.punctuation and len(word) > 1]
+
+        tokens = [stemming(word) for word in tokens]
+        tokens = filter(None, tokens)  # Remove None values
         sentence = ' '.join(tokens)
-        sentence = stemming(sentence)
 
         cleanSens.append(sentence)
 
-    # cleanSens , _ = removeNulls(cleanSens , [])
-
-    # Open the file in write mode
-    with open("test_sentences.txt", 'w') as file:
+    # Open the file in write mode with UTF-8 encoding
+    with open("test_sentences.txt", 'w', encoding='utf-8') as file:
         # Write each sentence to the file
         for sentence in cleanSens:
+            print(sentence)
             file.write(sentence + '\n')
+
 
 
 preprocessingTest()
